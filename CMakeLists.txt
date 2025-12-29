@@ -5,14 +5,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -Wl,--print-memory-usage")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,--print-memory-usage")
-set(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/FreeRTOS-Kernel)
-set(DRIVERS_DIR ${CMAKE_CURRENT_LIST_DIR}/drivers)
+set(PICO_DISPLAY_LIB_PATH ${CMAKE_CURRENT_LIST_DIR}/lib/pico-display-lib)
+set(PICO_DISPLAY_LIB_CONFIG_PATH ${PICO_DISPLAY_LIB_PATH}/configs)
 
 # initialize the SDK based on PICO_SDK_PATH
 # note: this must happen before project()
 include(pico_sdk_import.cmake)
 include(pico_extras_import_optional.cmake)
-include(${FREERTOS_KERNEL_PATH}/portable/ThirdParty/Community-Supported-Ports/GCC/RP2350_ARM_NTZ/FreeRTOS_Kernel_import.cmake)
 
 if (PICO_SDK_VERSION_STRING VERSION_LESS "2.0.0")
     message(FATAL_ERROR "Raspberry Pi Pico SDK version 2.0.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
@@ -23,69 +22,36 @@ if (NOT DEFINED PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS)
     set(PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS 3000)
 endif()
 
-set(DRIVER_SOURCES
-    main.c
-)
-
-# select the suitable config file
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-st7789v.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-st7305.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-st7576.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-gc9a01.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-gc9a01-8bit.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-ssd1306.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-ssd1327.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-ili9341.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/generic-st77916.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/wlk1804rctp-14p.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/fpc-zh096g1321.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/md144_spi_v04.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/pico-restouch-lcd-2.8.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/configs/pico_dm_qd3503728.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/pico_dm_gtm0375hi1t02.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/pico_dm_fpc032mra003.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/pico_dm_yt350s006.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/pico_dm_1p5623.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/configs/pico_dm_ep4309n.cmake)
-
-include(${DRIVERS_DIR}/backlight/config.cmake)
-include(${DRIVERS_DIR}/display/config.cmake)
-include(${DRIVERS_DIR}/input/config.cmake)
-include(${DRIVERS_DIR}/bus/config.cmake)
-include(${DRIVERS_DIR}/clk/config.cmake)
+# set the project name
+project(pico-display-template C CXX ASM)
 
 # Initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# set the project name
-project(pico-display-template C CXX ASM)
+# select the suitable config file
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-st7789v.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-st7305.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-st7576.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-gc9a01.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-gc9a01-8bit.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-ssd1306.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-ssd1327.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-ili9341.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/generic-st77916.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/wlk1804rctp-14p.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/fpc-zh096g1321.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/md144_spi_v04.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/pico-restouch-lcd-2.8.cmake)
+include(${PICO_DISPLAY_LIB_CONFIG_PATH}/pico_dm_qd3503728.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/pico_dm_gtm0375hi1t02.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/pico_dm_fpc032mra003.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/pico_dm_yt350s006.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/pico_dm_1p5623.cmake)
+# include(${PICO_DISPLAY_LIB_CONFIG_PATH}/pico_dm_ep4309n.cmake)
 
-add_executable(${PROJECT_NAME})
+add_subdirectory(${PICO_DISPLAY_LIB_PATH})
 
-add_subdirectory(${DRIVERS_DIR}/backlight)
-add_subdirectory(${DRIVERS_DIR}/display)
-add_subdirectory(${DRIVERS_DIR}/input)
-add_subdirectory(${DRIVERS_DIR}/bus)
-add_subdirectory(${DRIVERS_DIR}/clk)
-
-# Note: If you are using a NOR flash like "w25q16". Just keep the following content.
-# The maximum speed of "w25q16" is 133MHz, However, the clock speed of XIP QSPI is divided from "sys_clk".
-# So, when your "sys_clk" is greater than 266MHz and default PICO_FLASH_SPI_CLKDIV=2, It will exceed the
-# maximum speed, because PICO_FLASH_SPI_CLKDIV must be even, So 4 is good for most purpose, Otherwise,
-# nothing should be done. These things will only useful when you overclocking the rp2040.
-if(${SYS_CLK_KHZ} GREATER 266000)
-    set(PICO_FLASH_SPI_CLKDIV 4)
-else()
-    set(PICO_FLASH_SPI_CLKDIV 2)
-endif()
-math(EXPR FLASH_CLK_KHZ "${SYS_CLK_KHZ} / ${PICO_FLASH_SPI_CLKDIV}")
-target_compile_definitions(bs2_default PRIVATE PICO_FLASH_SPI_CLKDIV=${PICO_FLASH_SPI_CLKDIV})
-target_compile_definitions(${PROJECT_NAME} PRIVATE FLASH_CLK_KHZ=${FLASH_CLK_KHZ})
-
-# message(WARNING ${DRIVER_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE
-    ${DRIVER_SOURCES}
-)
+add_executable(${PROJECT_NAME} main.c)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
@@ -96,17 +62,14 @@ target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_multicore
     pico_bootsel_via_double_reset
-    hardware_i2c
-    hardware_spi
-    hardware_pwm
     hardware_clocks
+    pico-display-lib
     FreeRTOS-Kernel-Heap3
-    ${PIO_LIB}
 )
 
-math(EXPR FLASH_CLK_KHZ "${SYS_CLK_KHZ} / ${PICO_FLASH_SPI_CLKDIV}")
-math(EXPR FLASH_CLK_MHZ "${FLASH_CLK_KHZ} / 1000")
-math(EXPR SYS_CLK_MHZ "${SYS_CLK_KHZ} / 1000")
+# math(EXPR FLASH_CLK_KHZ "${FLASH_CLK_KHZ}")
+# math(EXPR FLASH_CLK_MHZ "${FLASH_CLK_KHZ} / 1000")
+# math(EXPR SYS_CLK_MHZ "${SYS_CLK_KHZ} / 1000")
 math(EXPR TFT_BUS_CLK_MHZ "${TFT_BUS_CLK_KHZ} / 1000")
 message(STATUS "
     CPU speed   : ${SYS_CLK_MHZ} MHz

@@ -1,3 +1,0 @@
-list(APPEND DRIVER_SOURCES
-    ${CMAKE_CURRENT_LIST_DIR}/pwm_backlight.c
-)
